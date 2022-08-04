@@ -1,0 +1,26 @@
+#!/bin/sh
+
+## check for pkg-config
+pkg-config --version >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "*** pkg-config is not installed."
+    echo "*** We need pkg-config to proceed. Exiting."
+    exit 1
+fi
+
+## check for hwloc
+pkg-config --exists hwloc
+if [ $? -ne 0 ]; then
+    echo "*** pkg-config is installed but 'pkg-config --exists hwloc' did not return 0."
+    echo "*** We need hwloc to proceed. Exiting."
+    exit 2
+fi
+
+## get compiler flags and libs
+pkgcflags=`pkg-config --cflags hwloc`
+pkglibs=`pkg-config --libs hwloc`
+
+## substitute them in
+sed -e "s|@PKG_CXXFLAGS@|$pkgcflags|" -e "s|@PKG_LIBS@|$pkglibs|" src/Makevars.in > src/Makevars
+
+exit 0
